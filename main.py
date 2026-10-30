@@ -1,11 +1,29 @@
 import RPi.GPIO as GPIO
 import time
+import os
+import subprocess
+import requests
+from dotenv import load_dotenv
+
 
 TRIG = 17         # GPIO pin connected to Trig of Ultrasonic Sensor
 ECHO = 18         # GPIO pin connected to Echo of Ultrasonic Sensor
 BuzzerPin = 27    # GPIO pin connected to Buzzer
 TempHolder = 0    # temporary Temperature variable celsius
 PainThresholdC = 43 # temperature when alert to hot pot
+MIC = "plughw:CARD=camera,DEV=0"    #might need to replace with what the webcam mic is
+
+DEEPGRAM_KEY = os.environ["DEEPGRAM_API_KEY"]
+OPENAI_KEY = os.environ["OPENAI_API_KEY"]
+
+def speech_to_text():
+    r = requests.post(
+        "https://api.deepgram.com/v1/listen?model=nova-3&smart_format=true",
+        headers={"Authorization": "Token " + DEEPGRAM_KEY, "Content-Type": "audio/wav">
+        data=open("question.wav", "rb"))
+    r.raise_for_status()
+    return r.json()["results"]["channels"][0]["alternatives"][0]["transcript"]
+
 
 def setup():
     GPIO.setmode(GPIO.BCM)
